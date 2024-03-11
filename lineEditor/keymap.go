@@ -8,7 +8,7 @@ import (
 )
 
 var aroshBindings = map[curses.Key]func(*LineEditor){
-	113: Quit,         // q
+	113: Exit,         // q
 	10:  AcceptLine,   // enter
 	260: MoveLeft,     //left
 	261: MoveRight,    // right
@@ -19,7 +19,7 @@ var aroshBindings = map[curses.Key]func(*LineEditor){
 	262: StartOfLine,  // home
 	360: EndOfLine,    // end
 	263: DeleteBehind, // backspace
-	21:  DeleteAll,
+	21:  DeleteAll,    // ctrl+u
 }
 
 func newBinding(key curses.Key, command func(*LineEditor)) error {
