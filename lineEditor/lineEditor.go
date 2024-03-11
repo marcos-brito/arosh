@@ -85,7 +85,7 @@ func (editor *LineEditor) add(c string, position int) {
 
 	curses.StdScr().Move(editor.startY, len(editor.prompt))
 	curses.StdScr().ClearToBottom()
-	curses.StdScr().MovePrint(editor.startY, len(PROMPT), editor.text.text())
+	curses.StdScr().MovePrint(editor.startY, len(editor.prompt), editor.text.text())
 	curses.StdScr().Move(y, x+1)
 	curses.StdScr().Refresh()
 }
@@ -96,7 +96,7 @@ func (editor *LineEditor) delete(position int) {
 
 	curses.StdScr().Move(editor.startY, len(editor.prompt))
 	curses.StdScr().ClearToBottom()
-	curses.StdScr().MovePrint(editor.startY, len(PROMPT), editor.text.text())
+	curses.StdScr().MovePrint(editor.startY, len(editor.prompt), editor.text.text())
 	curses.StdScr().Move(y, x-1)
 	curses.StdScr().Refresh()
 }
