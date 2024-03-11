@@ -249,6 +249,10 @@ func EndOfLine(editor *LineEditor) {
 }
 
 func AcceptLine(editor *LineEditor) {
+	Print(editor, fmt.Sprintf("%s%s", editor.prompt, editor.text.text()))
+
+	editor.text = newText("")
+	editor.position = 0
 	editor.eventManager.Notify(event.LINE_ACCEPTED)
 }
 
