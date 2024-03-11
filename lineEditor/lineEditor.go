@@ -21,8 +21,6 @@ type Widget interface {
 
 type LineEditor struct {
 	text         *Text
-	promptWindow *curses.Window
-	textWindow   *curses.Window
 	widgets      []Widget
 	eventManager *event.EventManager
 }
@@ -34,17 +32,10 @@ func New() *LineEditor {
 	}
 }
 
+	curses.StdScr().Refresh()
+
 func (editor *LineEditor) Init() {
 	initCurses()
-
-	editor.promptWindow = createPromptWindow()
-	editor.textWindow = createTextWindow()
-	curses.StdScr().Refresh()
-
-	editor.promptWindow.MovePrint(0, 0, PROMPT)
-	editor.promptWindow.Refresh()
-	curses.StdScr().Move(0, len(PROMPT)+1)
-	curses.StdScr().Refresh()
 
 	editor.setupWidgets()
 
@@ -77,26 +68,6 @@ func (editor *LineEditor) execWidgets() {
 	}
 }
 
-func createTextWindow() *curses.Window {
-	textWindow, err := curses.NewWindow(1, 0, 0, len(PROMPT)+1)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return textWindow
-}
-
-func createPromptWindow() *curses.Window {
-	promptWindow, err := curses.NewWindow(1, len(PROMPT), 0, 0)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return promptWindow
-}
-
 func initCurses() {
 	curses.Init()
 	curses.Raw(true)
@@ -109,18 +80,25 @@ func initCurses() {
 }
 
 func (editor *LineEditor) add(c string, position int) {
+	y, x := curses.StdScr().CursorYX()
 	editor.text.add(position, c)
-	editor.textWindow.MovePrint(0, 0, editor.text.text())
 
-	editor.textWindow.Refresh()
+	curses.StdScr().Move(editor.startY, len(editor.prompt))
+	curses.StdScr().ClearToBottom()
+	curses.StdScr().MovePrint(editor.startY, len(PROMPT), editor.text.text())
+	curses.StdScr().Move(y, x+1)
+	curses.StdScr().Refresh()
 }
 
 func (editor *LineEditor) delete(position int) {
+	y, x := curses.StdScr().CursorYX()
 	editor.text.delete(position)
-	editor.textWindow.Erase()
-	editor.textWindow.MovePrint(0, 0, editor.text.text())
 
-	editor.textWindow.Refresh()
+	curses.StdScr().Move(editor.startY, len(editor.prompt))
+	curses.StdScr().ClearToBottom()
+	curses.StdScr().MovePrint(editor.startY, len(PROMPT), editor.text.text())
+	curses.StdScr().Move(y, x-1)
+	curses.StdScr().Refresh()
 }
 
 // API
