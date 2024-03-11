@@ -199,12 +199,6 @@ func On(editor *LineEditor, event event.Event, listener event.Listener) {
 	editor.eventManager.AddListener(event, listener)
 }
 
-func CurrentX(editor *LineEditor) int {
-	_, x := editor.textWindow.CursorYX()
-
-	return x
-}
-
 func NewBinding(editor *LineEditor, key curses.Key, command func(*LineEditor)) error {
 	err := newBinding(key, command)
 
