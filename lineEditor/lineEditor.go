@@ -23,6 +23,7 @@ type LineEditor struct {
 	text         *Text
 	widgets      []Widget
 	prompt       string
+	position     int
 	eventManager *event.EventManager
 	// Keeps the Y where the current prompt started
 	startY int
@@ -35,8 +36,6 @@ func New() *LineEditor {
 		eventManager: event.NewEventManager(),
 	}
 }
-
-	curses.StdScr().Refresh()
 
 func (editor *LineEditor) Init() {
 	initCurses()
@@ -116,14 +115,26 @@ func (editor *LineEditor) delete(position int) {
 // API
 
 func Put(editor *LineEditor, str string) {
-	_, x := editor.textWindow.CursorYX()
-
-	if x == 0 {
-		editor.add(str, x)
+	// HACK: The current implementation for the `Text` (a piece table) has some flaws.
+	// If the original buffer is empty then both the first and the second insertion have to be done
+	// at index 0.
+	if editor.position == 0 || editor.position == 1 {
+		editor.add(str, 0)
+		editor.position++
 		return
 	}
 
-	editor.add(str, x-1)
+	editor.add(str, editor.position-1)
+	editor.position++
+}
+
+func DeleteBehind(editor *LineEditor) {
+	if editor.position == 0 {
+		return
+	}
+
+	editor.delete(editor.position - 1)
+	editor.position--
 }
 
 func Error(editor *LineEditor, err string) {
