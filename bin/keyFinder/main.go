@@ -42,6 +42,7 @@ func initCurses() {
 	curses.Init()
 	curses.Raw(true)
 	curses.Echo(false)
+	curses.StdScr().ScrollOk(true)
 	err := curses.StdScr().Keypad(true)
 
 	if err != nil {
