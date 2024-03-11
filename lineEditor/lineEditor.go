@@ -194,6 +194,15 @@ func Put(editor *LineEditor, str string) {
 	editor.eventManager.Notify(event.TEXT_PUTTED)
 }
 
+func GetLineContent(editor *LineEditor) string {
+	return editor.text.text()
+}
+
+func SetLineContent(editor *LineEditor, str string) {
+	editor.deleteAll()
+	editor.add(str, 0)
+}
+
 func DeleteBehind(editor *LineEditor) {
 	if editor.position == 0 {
 		return
