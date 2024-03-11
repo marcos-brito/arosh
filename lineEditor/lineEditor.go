@@ -24,6 +24,8 @@ type LineEditor struct {
 	widgets      []Widget
 	prompt       string
 	eventManager *event.EventManager
+	// Keeps the Y where the current prompt started
+	startY int
 }
 
 func New() *LineEditor {
@@ -39,6 +41,7 @@ func New() *LineEditor {
 func (editor *LineEditor) Init() {
 	initCurses()
 
+	editor.drawPrompt(0, 0)
 	editor.setupWidgets()
 
 	for {
@@ -53,7 +56,6 @@ func (editor *LineEditor) Init() {
 		}
 
 		Put(editor, keyString)
-
 		editor.execWidgets()
 	}
 }
@@ -80,6 +82,13 @@ func initCurses() {
 	if err != nil {
 		panic("Could not turn keypad characters on")
 	}
+}
+
+func (editor *LineEditor) drawPrompt(y int, x int) {
+	editor.startY = y
+	curses.StdScr().MovePrint(y, x, editor.prompt)
+	curses.StdScr().Move(y, len(editor.prompt))
+	curses.StdScr().Refresh()
 }
 
 func (editor *LineEditor) add(c string, position int) {
