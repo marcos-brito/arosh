@@ -222,7 +222,7 @@ func AcceptLine(editor *LineEditor) {
 	editor.eventManager.Notify(event.LINE_ACCEPTED)
 }
 
-func Quit(editor *LineEditor) {
+func Exit(editor *LineEditor) {
 	curses.End()
 	os.Exit(0)
 }
