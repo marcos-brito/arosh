@@ -185,12 +185,13 @@ func Put(editor *LineEditor, str string) {
 	// at index 0.
 	if editor.position == 0 || editor.position == 1 {
 		editor.add(str, 0)
-		editor.position++
+		editor.position += len(str)
 		return
 	}
 
 	editor.add(str, editor.position-1)
-	editor.position++
+	editor.position += len(str)
+	editor.eventManager.Notify(event.TEXT_PUTTED)
 }
 
 func DeleteBehind(editor *LineEditor) {
