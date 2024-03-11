@@ -92,14 +92,14 @@ func (editor *LineEditor) drawPrompt(y int, x int) {
 	curses.StdScr().Refresh()
 }
 
-func (editor *LineEditor) add(c string, position int) {
+func (editor *LineEditor) add(str string, position int) {
 	y, x := curses.StdScr().CursorYX()
-	editor.text.add(position, c)
+	editor.text.add(position, str)
 
 	curses.StdScr().Move(editor.startY, len(editor.prompt))
 	curses.StdScr().ClearToBottom()
 	curses.StdScr().MovePrint(editor.startY, len(editor.prompt), editor.text.text())
-	curses.StdScr().Move(y, x+1)
+	curses.StdScr().Move(y, x+len(str))
 	curses.StdScr().Refresh()
 }
 
@@ -112,6 +112,44 @@ func (editor *LineEditor) delete(position int) {
 	curses.StdScr().MovePrint(editor.startY, len(editor.prompt), editor.text.text())
 	curses.StdScr().Move(y, x-1)
 	curses.StdScr().Refresh()
+}
+
+func (editor *LineEditor) deleteAll() {
+	editor.text = newText("")
+	editor.position = 0
+	curses.StdScr().Move(editor.startY, len(editor.prompt))
+	curses.StdScr().ClearToBottom()
+	curses.StdScr().Refresh()
+}
+
+func (editor *LineEditor) moveToN(n int) {
+	y, x := editor.positionToCoordinate(n)
+
+	curses.StdScr().Move(y, x)
+	curses.StdScr().Refresh()
+
+	if n <= 0 {
+		editor.position = 0
+		return
+	}
+
+	if n >= len(editor.text.text()) {
+		editor.position = len(editor.text.text())
+		return
+	}
+
+	editor.position = n
+}
+
+func (editor *LineEditor) print(text string) {
+	_, maxX := curses.StdScr().MaxYX()
+	y := int(math.Floor(float64(len(text) / maxX)))
+
+	curses.StdScr().Move(editor.startY, len(editor.prompt))
+	curses.StdScr().ClearToBottom()
+
+	curses.StdScr().MovePrintln(editor.startY, 0, text)
+	editor.drawPrompt(editor.startY+y+1, 0)
 }
 
 // Return the coordinate for the given position in the current prompt, but never
@@ -165,30 +203,15 @@ func DeleteBehind(editor *LineEditor) {
 }
 
 func DeleteAll(editor *LineEditor) {
-	EndOfLine(editor)
-
-	for {
-		if editor.position == 0 {
-			break
-		}
-
-		DeleteBehind(editor)
-	}
+	editor.deleteAll()
 }
 
 func Print(editor *LineEditor, text string) {
-	_, maxX := curses.StdScr().MaxYX()
-	y := int(math.Floor(float64(len(text) / maxX)))
-
-	curses.StdScr().Move(editor.startY, len(editor.prompt))
-	curses.StdScr().ClearToBottom()
-
-	curses.StdScr().MovePrintln(editor.startY, 0, text)
-	editor.drawPrompt(editor.startY+y+1, 0)
+	editor.print(text)
 }
 
 func Error(editor *LineEditor, err string) {
-	Print(editor, fmt.Sprintf("error: %s", err))
+	editor.print(fmt.Sprintf("error: %s", err))
 }
 
 func AddWidget(editor *LineEditor, widget Widget) {
@@ -214,46 +237,30 @@ func OverwriteBiding(editor *LineEditor, key curses.Key, command func(*LineEdito
 }
 
 func MoveToN(editor *LineEditor, n int) {
-	y, x := editor.positionToCoordinate(n)
-
-	curses.StdScr().Move(y, x)
-	curses.StdScr().Refresh()
-
-	if n <= 0 {
-		editor.position = 0
-		return
-	}
-
-	if n >= len(editor.text.text()) {
-		editor.position = len(editor.text.text())
-		return
-	}
-
-	editor.position = n
+	editor.moveToN(n)
 }
 
 func MoveLeft(editor *LineEditor) {
-	MoveToN(editor, editor.position-1)
+	editor.moveToN(editor.position - 1)
 }
 
 func MoveRight(editor *LineEditor) {
-	MoveToN(editor, editor.position+1)
+	editor.moveToN(editor.position + 1)
 }
 
 func StartOfLine(editor *LineEditor) {
-	MoveToN(editor, 0)
+	editor.moveToN(0)
 }
 
 func EndOfLine(editor *LineEditor) {
-	MoveToN(editor, len(editor.text.text()))
+	editor.moveToN(len(editor.text.text()))
 }
 
 func AcceptLine(editor *LineEditor) {
-	Print(editor, fmt.Sprintf("%s%s", editor.prompt, editor.text.text()))
-
-	editor.text = newText("")
-	editor.position = 0
+	editor.print(fmt.Sprintf("%s%s", editor.prompt, editor.text.text()))
 	editor.eventManager.Notify(event.LINE_ACCEPTED)
+
+	editor.deleteAll()
 }
 
 func Exit(editor *LineEditor) {
