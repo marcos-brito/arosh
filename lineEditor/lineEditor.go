@@ -22,12 +22,14 @@ type Widget interface {
 type LineEditor struct {
 	text         *Text
 	widgets      []Widget
+	prompt       string
 	eventManager *event.EventManager
 }
 
 func New() *LineEditor {
 	return &LineEditor{
 		text:         newText(""),
+		prompt:       PROMPT,
 		eventManager: event.NewEventManager(),
 	}
 }
