@@ -1,6 +1,8 @@
 package lineEditor
 
 import (
+	"fmt"
+	"math"
 	"os"
 
 	"github.com/marcos-brito/arosh/lineEditor/event"
@@ -112,6 +114,31 @@ func (editor *LineEditor) delete(position int) {
 	curses.StdScr().Refresh()
 }
 
+// Return the coordinate for the given position in the current prompt, but never
+// going beyond the limits
+func (editor *LineEditor) positionToCoordinate(position int) (y int, x int) {
+	text := editor.text.text()
+	_, maxX := curses.StdScr().MaxYX()
+	maxY := int(math.Floor(float64(len(text) / maxX)))
+
+	row := int(math.Floor(float64(position / maxX)))
+	column := (position % maxX)
+
+	if row == 0 {
+		return editor.startY, column + len(editor.prompt)
+	}
+
+	if row < 0 {
+		return editor.startY, len(editor.prompt)
+	}
+
+	if row >= maxY {
+		return maxY, (len(text))
+	}
+
+	return row, column
+}
+
 // API
 
 func Put(editor *LineEditor, str string) {
@@ -192,56 +219,41 @@ func OverwriteBiding(editor *LineEditor, key curses.Key, command func(*LineEdito
 	overwriteBiding(key, command)
 }
 
-func DeleteBehind(editor *LineEditor) {
-	_, x := editor.textWindow.CursorYX()
+func MoveToN(editor *LineEditor, n int) {
+	y, x := editor.positionToCoordinate(n)
 
-	if x == 0 {
+	curses.StdScr().Move(y, x)
+	curses.StdScr().Refresh()
+
+	if n <= 0 {
+		editor.position = 0
 		return
 	}
 
-	editor.delete(x - 1)
-}
-
-// TODO
-func DeleteAll(editor *LineEditor) {
-	Put(editor, "to be done")
-}
-
-func MoveN(editor *LineEditor, n int) {
-	if n > len(editor.text.text()) {
-		editor.textWindow.Move(0, len(editor.text.text()))
+	if n >= len(editor.text.text()) {
+		editor.position = len(editor.text.text())
 		return
 	}
 
-	if n < 0 {
-		editor.textWindow.Move(0, 0)
-		return
-	}
-
-	currentY, _ := editor.textWindow.CursorYX()
-	editor.textWindow.Move(currentY, n)
-	editor.textWindow.Refresh()
+	editor.position = n
 }
 
 func MoveLeft(editor *LineEditor) {
-	_, position := editor.textWindow.CursorYX()
-	MoveN(editor, position-1)
+	MoveToN(editor, editor.position-1)
 }
 
 func MoveRight(editor *LineEditor) {
-	_, position := editor.textWindow.CursorYX()
-	MoveN(editor, position+1)
+	MoveToN(editor, editor.position+1)
 }
 
 func StartOfLine(editor *LineEditor) {
-	MoveN(editor, 0)
+	MoveToN(editor, 0)
 }
 
 func EndOfLine(editor *LineEditor) {
-	MoveN(editor, len(editor.text.text()))
+	MoveToN(editor, len(editor.text.text()))
 }
 
-// TODO
 func AcceptLine(editor *LineEditor) {
 	editor.eventManager.Notify(event.LINE_ACCEPTED)
 }
