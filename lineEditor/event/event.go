@@ -5,6 +5,7 @@ type Listener func()
 
 const (
 	LINE_ACCEPTED = iota
+	TEXT_PUTTED
 )
 
 type EventManager struct {
@@ -15,6 +16,7 @@ func NewEventManager() *EventManager {
 	return &EventManager{
 		listeners: map[Event][]Listener{
 			LINE_ACCEPTED: {},
+			TEXT_PUTTED:   {},
 		},
 	}
 }
