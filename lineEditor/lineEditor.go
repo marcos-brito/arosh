@@ -137,8 +137,31 @@ func DeleteBehind(editor *LineEditor) {
 	editor.position--
 }
 
-func Error(editor *LineEditor, err string) {
+func DeleteAll(editor *LineEditor) {
+	EndOfLine(editor)
 
+	for {
+		if editor.position == 0 {
+			break
+		}
+
+		DeleteBehind(editor)
+	}
+}
+
+func Print(editor *LineEditor, text string) {
+	_, maxX := curses.StdScr().MaxYX()
+	y := int(math.Floor(float64(len(text) / maxX)))
+
+	curses.StdScr().Move(editor.startY, len(editor.prompt))
+	curses.StdScr().ClearToBottom()
+
+	curses.StdScr().MovePrintln(editor.startY, 0, text)
+	editor.drawPrompt(editor.startY+y+1, 0)
+}
+
+func Error(editor *LineEditor, err string) {
+	Print(editor, fmt.Sprintf("error: %s", err))
 }
 
 func AddWidget(editor *LineEditor, widget Widget) {
