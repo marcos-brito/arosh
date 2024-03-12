@@ -29,7 +29,7 @@ type LineEditor struct {
 	startY int
 }
 
-func New() *LineEditor {
+func NewLineEditor() *LineEditor {
 	return &LineEditor{
 		text:         newText(""),
 		prompt:       PROMPT,
@@ -120,7 +120,7 @@ func (editor *LineEditor) deleteAll() {
 	curses.StdScr().Refresh()
 }
 
-func (editor *LineEditor) moveToN(n int) {
+func (editor *LineEditor) moveN(n int) {
 	y, x := editor.positionToCoordinate(n)
 
 	curses.StdScr().Move(y, x)
