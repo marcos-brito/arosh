@@ -25,6 +25,7 @@ type LineEditor struct {
 	prompt       string
 	position     int
 	eventManager *event.EventManager
+	shouldQuit   bool
 	// Keeps the Y where the current prompt started
 	startY int
 }
@@ -35,6 +36,32 @@ func NewLineEditor() *LineEditor {
 		prompt:       PROMPT,
 		eventManager: event.NewEventManager(),
 	}
+}
+
+func (editor *LineEditor) subLineEditor(y int, x int) {
+	editor.drawPrompt(y, x)
+
+	for {
+		if editor.shouldQuit {
+			break
+		}
+
+		ch := curses.StdScr().GetChar()
+		keyString := curses.KeyString(ch)
+
+		fn, ok := aroshBindings[ch]
+
+		if ok {
+			fn(editor)
+			continue
+		}
+
+		Put(editor, keyString)
+	}
+}
+
+func (editor *LineEditor) quit() {
+	editor.shouldQuit = true
 }
 
 func (editor *LineEditor) Init() {
