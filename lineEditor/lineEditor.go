@@ -3,8 +3,9 @@ package lineEditor
 import (
 	"math"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/marcos-brito/arosh/lineEditor/event"
-	curses "github.com/rthornton128/goncurses"
+	screen "github.com/marcos-brito/arosh/lineEditor/screen"
 )
 
 const PROMPT = "$ "
@@ -25,6 +26,7 @@ type LineEditor struct {
 	prompt       string
 	position     int
 	eventManager *event.EventManager
+	screen       tcell.Screen
 	shouldQuit   bool
 	// Keeps the Y where the current prompt started
 	startY int
@@ -34,55 +36,65 @@ func NewLineEditor() *LineEditor {
 	return &LineEditor{
 		text:         newText(""),
 		prompt:       PROMPT,
+		screen:       screen.NewScreen(),
 		eventManager: event.NewEventManager(),
 	}
 }
 
-func (editor *LineEditor) subLineEditor(y int, x int) {
-	editor.drawPrompt(y, x)
+func (editor *LineEditor) subLineEditor(x int, y int) {
+	editor.drawPrompt(x, y)
+	editor.setupWidgets()
 
 	for {
-		if editor.shouldQuit {
-			break
+		event := editor.screen.PollEvent()
+
+		switch ev := event.(type) {
+		case *tcell.EventResize:
+			editor.screen.Sync()
+
+		case *tcell.EventKey:
+			editor.handleKey(ev)
+			editor.execWidgets()
 		}
+	}
+}
 
-		ch := curses.StdScr().GetChar()
-		keyString := curses.KeyString(ch)
+func (editor *LineEditor) Init() {
+	screen.Init(editor.screen)
+	editor.drawPrompt(0, 0)
+	editor.setupWidgets()
 
-		fn, ok := aroshBindings[ch]
+	for {
+		event := editor.screen.PollEvent()
 
-		if ok {
-			fn(editor)
-			continue
+		switch ev := event.(type) {
+		case *tcell.EventResize:
+			editor.screen.Sync()
+
+		case *tcell.EventKey:
+			editor.handleKey(ev)
+			editor.execWidgets()
 		}
-
-		Put(editor, keyString)
 	}
 }
 
 func (editor *LineEditor) quit() {
 	editor.shouldQuit = true
+	editor.screen.Fini()
 }
 
-func (editor *LineEditor) Init() {
-	initCurses()
+func (editor *LineEditor) handleKey(event *tcell.EventKey) {
+	key := event.Key()
 
-	editor.drawPrompt(0, 0)
-	editor.setupWidgets()
+	fn, ok := aroshBindings[key]
 
-	for {
-		ch := curses.StdScr().GetChar()
-		keyString := curses.KeyString(ch)
+	if ok {
+		fn(editor)
+		return
+	}
 
-		fn, ok := aroshBindings[ch]
-
-		if ok {
-			fn(editor)
-			continue
-		}
-
-		Put(editor, keyString)
-		editor.execWidgets()
+	if key == tcell.KeyRune {
+		Put(editor, string(event.Rune()))
 	}
 }
 
@@ -98,60 +110,34 @@ func (editor *LineEditor) execWidgets() {
 	}
 }
 
-func initCurses() {
-	curses.Init()
-	curses.Raw(true)
-	curses.Echo(false)
-	curses.StdScr().ScrollOk(true)
-	err := curses.StdScr().Keypad(true)
-
-	if err != nil {
-		panic("Could not turn keypad characters on")
-	}
-}
-
-func (editor *LineEditor) drawPrompt(y int, x int) {
+func (editor *LineEditor) drawPrompt(x int, y int) {
 	editor.startY = y
-	curses.StdScr().MovePrint(y, x, editor.prompt)
-	curses.StdScr().Move(y, len(editor.prompt))
-	curses.StdScr().Refresh()
+	screen.PrintAndMoveCursor(editor.screen, x, y, editor.prompt)
 }
 
 func (editor *LineEditor) add(str string, position int) {
-	y, x := curses.StdScr().CursorYX()
 	editor.text.add(position, str)
-
-	curses.StdScr().Move(editor.startY, len(editor.prompt))
-	curses.StdScr().ClearToBottom()
-	curses.StdScr().MovePrint(editor.startY, len(editor.prompt), editor.text.text())
-	curses.StdScr().Move(y, x+len(str))
-	curses.StdScr().Refresh()
+	screen.ClearToBottom(editor.screen, len(editor.prompt), editor.startY)
+	screen.PrintAndMoveCursor(editor.screen, len(editor.prompt), editor.startY, editor.text.text())
 }
 
 func (editor *LineEditor) delete(position int) {
-	y, x := curses.StdScr().CursorYX()
 	editor.text.delete(position)
-
-	curses.StdScr().Move(editor.startY, len(editor.prompt))
-	curses.StdScr().ClearToBottom()
-	curses.StdScr().MovePrint(editor.startY, len(editor.prompt), editor.text.text())
-	curses.StdScr().Move(y, x-1)
-	curses.StdScr().Refresh()
+	screen.ClearToBottom(editor.screen, len(editor.prompt), editor.startY)
+	screen.PrintAndMoveCursor(editor.screen, len(editor.prompt), editor.startY, editor.text.text())
 }
 
 func (editor *LineEditor) deleteAll() {
 	editor.text = newText("")
 	editor.position = 0
-	curses.StdScr().Move(editor.startY, len(editor.prompt))
-	curses.StdScr().ClearToBottom()
-	curses.StdScr().Refresh()
+	screen.MoveCursor(editor.screen, len(editor.prompt), editor.startY)
+	screen.ClearToBottom(editor.screen, len(editor.prompt), editor.startY)
 }
 
 func (editor *LineEditor) moveN(n int) {
 	y, x := editor.positionToCoordinate(n)
 
-	curses.StdScr().Move(y, x)
-	curses.StdScr().Refresh()
+	screen.MoveCursor(editor.screen, x, y)
 
 	if n <= 0 {
 		editor.position = 0
@@ -167,21 +153,19 @@ func (editor *LineEditor) moveN(n int) {
 }
 
 func (editor *LineEditor) print(text string) {
-	_, maxX := curses.StdScr().MaxYX()
+	maxX, _ := editor.screen.Size()
 	y := int(math.Floor(float64(len(text) / maxX)))
 
-	curses.StdScr().Move(editor.startY, len(editor.prompt))
-	curses.StdScr().ClearToBottom()
-
-	curses.StdScr().MovePrintln(editor.startY, 0, text)
-	editor.drawPrompt(editor.startY+y+1, 0)
+	screen.ClearToBottom(editor.screen, len(editor.prompt), editor.startY)
+	screen.Print(editor.screen, 0, editor.startY, text)
+	editor.drawPrompt(0, editor.startY+y+1)
 }
 
 // Return the coordinate for the given position in the current prompt, but never
 // going beyond the limits
 func (editor *LineEditor) positionToCoordinate(position int) (y int, x int) {
 	text := editor.text.text()
-	_, maxX := curses.StdScr().MaxYX()
+	maxX, _ := editor.screen.Size()
 	maxY := int(math.Floor(float64(len(text) / maxX)))
 
 	row := int(math.Floor(float64(position / maxX)))

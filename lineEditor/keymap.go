@@ -4,25 +4,27 @@ import (
 	"errors"
 	"fmt"
 
-	curses "github.com/rthornton128/goncurses"
+	"github.com/gdamore/tcell/v2"
 )
 
-var aroshBindings = map[curses.Key]func(*LineEditor){
-	113: Exit,         // q
-	10:  AcceptLine,   // enter
-	260: MoveLeft,     //left
-	261: MoveRight,    // right
-	6:   MoveRight,    // ctrl+f
-	2:   MoveLeft,     // ctrl+b
-	1:   StartOfLine,  // ctrl+a
-	5:   EndOfLine,    // ctrl+e
-	262: StartOfLine,  // home
-	360: EndOfLine,    // end
-	263: DeleteBehind, // backspace
-	21:  DeleteAll,    // ctrl+u
+var aroshBindings = map[tcell.Key]func(*LineEditor){
+	// TODO: remove this one at some point
+	tcell.KeyEsc:        Exit,
+	tcell.KeyEnter:      AcceptLine,
+	tcell.KeyLeft:       MoveLeft,
+	tcell.KeyRight:      MoveRight,
+	tcell.KeyCtrlF:      MoveRight,
+	tcell.KeyCtrlB:      MoveLeft,
+	tcell.KeyCtrlA:      StartOfLine,
+	tcell.KeyCtrlE:      EndOfLine,
+	tcell.KeyHome:       StartOfLine,
+	tcell.KeyEnd:        EndOfLine,
+	tcell.KeyBackspace:  DeleteBehind,
+	tcell.KeyBackspace2: DeleteBehind,
+	tcell.KeyCtrlU:      DeleteAll,
 }
 
-func newBinding(key curses.Key, command func(*LineEditor)) error {
+func newBinding(key tcell.Key, command func(*LineEditor)) error {
 	_, ok := aroshBindings[key]
 
 	if ok {
@@ -34,6 +36,6 @@ func newBinding(key curses.Key, command func(*LineEditor)) error {
 	return nil
 }
 
-func overwriteBiding(key curses.Key, command func(*LineEditor)) {
+func overwriteBiding(key tcell.Key, command func(*LineEditor)) {
 	aroshBindings[key] = command
 }

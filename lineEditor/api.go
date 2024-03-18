@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/marcos-brito/arosh/lineEditor/event"
-	curses "github.com/rthornton128/goncurses"
 )
 
 func Put(editor *LineEditor, str string) {
@@ -62,7 +62,7 @@ func On(editor *LineEditor, event event.Event, listener event.Listener) {
 	editor.eventManager.AddListener(event, listener)
 }
 
-func NewBinding(editor *LineEditor, key curses.Key, command func(*LineEditor)) error {
+func NewBinding(editor *LineEditor, key tcell.Key, command func(*LineEditor)) error {
 	err := newBinding(key, command)
 
 	if err != nil {
@@ -72,7 +72,7 @@ func NewBinding(editor *LineEditor, key curses.Key, command func(*LineEditor)) e
 	return nil
 }
 
-func OverwriteBiding(editor *LineEditor, key curses.Key, command func(*LineEditor)) {
+func OverwriteBiding(editor *LineEditor, key tcell.Key, command func(*LineEditor)) {
 	overwriteBiding(key, command)
 }
 
@@ -104,6 +104,6 @@ func AcceptLine(editor *LineEditor) {
 }
 
 func Exit(editor *LineEditor) {
-	curses.End()
+	editor.quit()
 	os.Exit(0)
 }
