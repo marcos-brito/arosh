@@ -48,9 +48,9 @@ func (history *History) Setup(editor *lineEditor.LineEditor) {
 	history.currentLine = totalLines
 	history.modifiedLines[totalLines] = lineEditor.GetLineContent(editor)
 
-	lineEditor.NewBinding(editor, 14, history.next)     // ctrl+n
-	lineEditor.NewBinding(editor, 16, history.previous) // ctrl+p
-	lineEditor.NewBinding(editor, 18, menu)             // ctrl+r
+	lineEditor.NewBinding(editor, "ctrl+n", history.next)     // ctrl+n
+	lineEditor.NewBinding(editor, "ctrl+p", history.previous) // ctrl+p
+	lineEditor.NewBinding(editor, "ctrl+r", menu)             // ctrl+r
 
 	lineEditor.On(editor, event.LINE_ACCEPTED, history.writeCommand)
 	lineEditor.On(editor, event.TEXT_PUTTED, history.modifyLine)
