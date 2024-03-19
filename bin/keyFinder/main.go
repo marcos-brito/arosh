@@ -1,51 +1,46 @@
 package main
 
 import (
-	curses "github.com/rthornton128/goncurses"
+	"fmt"
 	"os"
-	"time"
+	"strings"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
-func main() {
-	initCurses()
-
-	timer := time.NewTimer(5 * time.Second)
-	resetTimer := make(chan struct{})
-
-	go func() {
-		for {
-			select {
-			case <-timer.C:
-				os.Exit(0)
-
-			case <-resetTimer:
-				if !timer.Stop() {
-					<-timer.C
-				}
-
-				timer.Reset(10 * time.Second)
-			}
-		}
-	}()
-
-	for {
-		ch := curses.StdScr().GetChar()
-		keyString := curses.KeyString(ch)
-
-		curses.StdScr().Printf("%s: %d\n", keyString, ch)
-		resetTimer <- struct{}{}
-	}
-
+type Finder struct {
+	keys []string
 }
 
-func initCurses() {
-	curses.Init()
-	curses.Raw(true)
-	curses.Echo(false)
-	curses.StdScr().ScrollOk(true)
-	err := curses.StdScr().Keypad(true)
+func (f *Finder) Init() tea.Cmd {
+	return nil
+}
 
-	if err != nil {
-		panic("Could not turn keypad characters on")
+func (f *Finder) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		f.handleKey(msg)
+	}
+
+	return f, nil
+}
+
+func (f *Finder) View() string {
+	return strings.Join(f.keys, "\n")
+}
+
+func (f *Finder) handleKey(msg tea.KeyMsg) {
+	key := msg.String()
+
+	f.keys = append(f.keys, key)
+}
+
+func main() {
+	finder := &Finder{[]string{}}
+	app := tea.NewProgram(finder)
+
+	if _, err := app.Run(); err != nil {
+		fmt.Printf("Alas, there's been an error: %v", err)
+		os.Exit(1)
 	}
 }

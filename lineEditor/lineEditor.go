@@ -1,11 +1,12 @@
 package lineEditor
 
 import (
-	"math"
+	"strings"
 
-	"github.com/gdamore/tcell/v2"
+	"github.com/charmbracelet/bubbles/cursor"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/marcos-brito/arosh/lineEditor/event"
-	screen "github.com/marcos-brito/arosh/lineEditor/screen"
 )
 
 const PROMPT = "$ "
@@ -26,65 +27,46 @@ type LineEditor struct {
 	prompt       string
 	position     int
 	eventManager *event.EventManager
-	screen       tcell.Screen
-	shouldQuit   bool
-	// Keeps the Y where the current prompt started
-	startY int
+	// FIX: rename this
+	messages []string
+	cursor   cursor.Model
 }
 
 func NewLineEditor() *LineEditor {
-	return &LineEditor{
+	editor := &LineEditor{
 		text:         newText(""),
 		prompt:       PROMPT,
-		screen:       screen.NewScreen(),
 		eventManager: event.NewEventManager(),
+		cursor:       cursor.New(),
 	}
+
+	editor.cursor.TextStyle = lipgloss.NewStyle().
+		Background(lipgloss.Color("#000000")).
+		Foreground(lipgloss.Color("#ffffff"))
+
+	return editor
 }
 
-func (editor *LineEditor) subLineEditor(x int, y int) {
-	editor.drawPrompt(x, y)
+func (editor *LineEditor) Init() tea.Cmd {
 	editor.setupWidgets()
-
-	for {
-		event := editor.screen.PollEvent()
-
-		switch ev := event.(type) {
-		case *tcell.EventResize:
-			editor.screen.Sync()
-
-		case *tcell.EventKey:
-			editor.handleKey(ev)
-			editor.execWidgets()
-		}
-	}
-}
-
-func (editor *LineEditor) Init() {
-	screen.Init(editor.screen)
-	editor.drawPrompt(0, 0)
-	editor.setupWidgets()
-
-	for {
-		event := editor.screen.PollEvent()
-
-		switch ev := event.(type) {
-		case *tcell.EventResize:
-			editor.screen.Sync()
-
-		case *tcell.EventKey:
-			editor.handleKey(ev)
-			editor.execWidgets()
-		}
-	}
+	return nil
 }
 
 func (editor *LineEditor) quit() {
-	editor.shouldQuit = true
-	editor.screen.Fini()
+	tea.Quit()
 }
 
-func (editor *LineEditor) handleKey(event *tcell.EventKey) {
-	key := event.Key()
+func (editor *LineEditor) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		editor.handleKey(msg)
+	}
+
+	return editor, nil
+}
+
+func (editor *LineEditor) handleKey(msg tea.KeyMsg) {
+	key := msg.String()
 
 	fn, ok := aroshBindings[key]
 
@@ -93,9 +75,34 @@ func (editor *LineEditor) handleKey(event *tcell.EventKey) {
 		return
 	}
 
-	if key == tcell.KeyRune {
-		Put(editor, string(event.Rune()))
+	Put(editor, key)
+}
+
+func (editor *LineEditor) View() string {
+	out := ""
+	text := editor.text.text()
+	editor.setCursorChar()
+
+	out += strings.Join(editor.messages, "\n")
+	out += "\n" + editor.prompt + text[:editor.position] + editor.cursor.View() + text[editor.position:]
+
+	return out
+}
+
+func (editor *LineEditor) setCursorChar() {
+	text := editor.text.text()
+
+	if editor.position == len(text) {
+		editor.cursor.SetChar(" ")
+		return
 	}
+
+	if editor.position == 0 {
+		editor.cursor.SetChar(string(text[0]))
+		return
+	}
+
+	editor.cursor.SetChar(string(text[editor.position]))
 }
 
 func (editor *LineEditor) setupWidgets() {
@@ -110,42 +117,29 @@ func (editor *LineEditor) execWidgets() {
 	}
 }
 
-func (editor *LineEditor) drawPrompt(x int, y int) {
-	editor.startY = y
-	screen.PrintAndMoveCursor(editor.screen, x, y, editor.prompt)
-}
-
-func (editor *LineEditor) add(str string, position int) {
-	editor.text.add(position, str)
-	screen.ClearToBottom(editor.screen, len(editor.prompt), editor.startY)
-	screen.PrintAndMoveCursor(editor.screen, len(editor.prompt), editor.startY, editor.text.text())
+func (editor *LineEditor) add(text string, position int) {
+	editor.text.add(position, text)
 }
 
 func (editor *LineEditor) delete(position int) {
 	editor.text.delete(position)
-	screen.ClearToBottom(editor.screen, len(editor.prompt), editor.startY)
-	screen.PrintAndMoveCursor(editor.screen, len(editor.prompt), editor.startY, editor.text.text())
 }
 
 func (editor *LineEditor) deleteAll() {
 	editor.text = newText("")
 	editor.position = 0
-	screen.MoveCursor(editor.screen, len(editor.prompt), editor.startY)
-	screen.ClearToBottom(editor.screen, len(editor.prompt), editor.startY)
 }
 
 func (editor *LineEditor) moveN(n int) {
-	y, x := editor.positionToCoordinate(n)
+	text := editor.text.text()
 
-	screen.MoveCursor(editor.screen, x, y)
-
-	if n <= 0 {
-		editor.position = 0
+	if n >= len(text) {
+		editor.position = len(text)
 		return
 	}
 
-	if n >= len(editor.text.text()) {
-		editor.position = len(editor.text.text())
+	if n <= 0 {
+		editor.position = 0
 		return
 	}
 
@@ -153,35 +147,8 @@ func (editor *LineEditor) moveN(n int) {
 }
 
 func (editor *LineEditor) print(text string) {
-	maxX, _ := editor.screen.Size()
-	y := int(math.Floor(float64(len(text) / maxX)))
-
-	screen.ClearToBottom(editor.screen, len(editor.prompt), editor.startY)
-	screen.Print(editor.screen, 0, editor.startY, text)
-	editor.drawPrompt(0, editor.startY+y+1)
+	editor.messages = append(editor.messages, text)
 }
 
-// Return the coordinate for the given position in the current prompt, but never
-// going beyond the limits
-func (editor *LineEditor) positionToCoordinate(position int) (y int, x int) {
-	text := editor.text.text()
-	maxX, _ := editor.screen.Size()
-	maxY := int(math.Floor(float64(len(text) / maxX)))
-
-	row := int(math.Floor(float64(position / maxX)))
-	column := (position % maxX)
-
-	if row == 0 {
-		return editor.startY, column + len(editor.prompt)
-	}
-
-	if row < 0 {
-		return editor.startY, len(editor.prompt)
-	}
-
-	if row >= maxY {
-		return maxY, (len(text))
-	}
-
-	return row, column
+func (editor *LineEditor) clear() {
 }

@@ -3,32 +3,30 @@ package lineEditor
 import (
 	"errors"
 	"fmt"
-
-	"github.com/gdamore/tcell/v2"
 )
 
-var aroshBindings = map[tcell.Key]func(*LineEditor){
+var aroshBindings = map[string]func(*LineEditor){
 	// TODO: remove this one at some point
-	tcell.KeyEsc:        Exit,
-	tcell.KeyEnter:      AcceptLine,
-	tcell.KeyLeft:       MoveLeft,
-	tcell.KeyRight:      MoveRight,
-	tcell.KeyCtrlF:      MoveRight,
-	tcell.KeyCtrlB:      MoveLeft,
-	tcell.KeyCtrlA:      StartOfLine,
-	tcell.KeyCtrlE:      EndOfLine,
-	tcell.KeyHome:       StartOfLine,
-	tcell.KeyEnd:        EndOfLine,
-	tcell.KeyBackspace:  DeleteBehind,
-	tcell.KeyBackspace2: DeleteBehind,
-	tcell.KeyCtrlU:      DeleteAll,
+	"ctrl+c":    Exit,
+	"enter":     AcceptLine,
+	"left":      MoveLeft,
+	"right":     MoveRight,
+	"ctrl+f":    MoveRight,
+	"ctrl+b":    MoveLeft,
+	"ctrl+a":    StartOfLine,
+	"ctrl+e":    EndOfLine,
+	"home":      StartOfLine,
+	"end":       EndOfLine,
+	"backspace": DeleteBehind,
+	"ctrl+u":    DeleteAll,
+	"ctrl+l":    Clear,
 }
 
-func newBinding(key tcell.Key, command func(*LineEditor)) error {
+func newBinding(key string, command func(*LineEditor)) error {
 	_, ok := aroshBindings[key]
 
 	if ok {
-		return errors.New(fmt.Sprintf("Binding already taken: %c", key))
+		return errors.New(fmt.Sprintf("Binding already taken: %s", key))
 	}
 
 	aroshBindings[key] = command
@@ -36,6 +34,6 @@ func newBinding(key tcell.Key, command func(*LineEditor)) error {
 	return nil
 }
 
-func overwriteBiding(key tcell.Key, command func(*LineEditor)) {
+func overwriteBiding(key string, command func(*LineEditor)) {
 	aroshBindings[key] = command
 }
