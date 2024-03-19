@@ -87,15 +87,18 @@ func (history *History) writeCommand() {
 		return
 	}
 
-	// TODO: not write empty lines
-	_, err = file.WriteString(lineEditor.GetLineContent(history.editor) + "\n")
+	line := lineEditor.GetLineContent(history.editor)
+	if len(strings.TrimSpace(line)) != 0 {
+		_, err = file.WriteString(lineEditor.GetLineContent(history.editor) + "\n")
 
-	if err != nil {
-		lineEditor.Error(
-			history.editor,
-			fmt.Sprintf("Could not append to history file: %s", err),
-		)
-		return
+		if err != nil {
+			lineEditor.Error(
+				history.editor,
+				fmt.Sprintf("Could not append to history file: %s", err),
+			)
+			return
+		}
+
 	}
 
 	history.reset()
