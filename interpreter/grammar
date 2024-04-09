@@ -16,7 +16,6 @@ word_list ::= name*
 name ::= (letter | "_") (letter | digit | "_")*
 
 
-
 Examples for compound_command:
 
 function () {

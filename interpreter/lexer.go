@@ -1,4 +1,4 @@
-package intepreter
+package interpreter
 
 import (
 	"unicode"

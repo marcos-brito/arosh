@@ -1,4 +1,4 @@
-package intepreter
+package interpreter
 
 type Parser struct {
 	lexer *Lexer
