@@ -1,0 +1,41 @@
+program ::= list;
+sequence ::= conditional ((";" | "&") conditional)*
+conditional ::= pipe (("&&" | "||") pipe)*
+pipe ::=  command ("|" command)*
+command ::= simple_command
+            | function
+            | compound_command
+function ::= "function" name block
+block ::= "{" commands* "}"
+compound_command ::= subshell
+subshell ::= "(" commands* ")"
+simple_command ::= name word_list redirection?
+redirection ::= (io_number? (">" | "<" | ">>" || "<<") name )*
+io_number ::= digit
+word_list ::= name*
+name ::= (letter | "_") (letter | digit | "_")*
+
+
+
+Examples for compound_command:
+
+function () {
+
+}
+
+if command then
+{{block}}
+fi
+
+if command then
+{{block}}
+else
+{{block}}
+fi
+
+for name; do
+
+done
+
+for name in some; do
+done
