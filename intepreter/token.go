@@ -1,4 +1,4 @@
-package lexer
+package intepreter
 
 type tokenType string
 
@@ -18,8 +18,6 @@ const (
 
 	AND    = "&"
 	PIPE   = "|"
-	LESS   = "<"
-	GREAT  = ">"
 	DOTDOT = ".."
 	DOLLAR = "$"
 
@@ -27,7 +25,10 @@ const (
 	DPIPE = "||"
 
 	DSEMI  = ";;"
+	SEMI   = ";"
 	DLESS  = "<<"
+	LESS   = "<"
+	GREAT  = ">"
 	DGREAT = ">>"
 
 	LESSAND  = "<&"
