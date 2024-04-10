@@ -24,8 +24,7 @@ const (
 	DAND  = "&&"
 	DPIPE = "||"
 
-	SEMI = ";"
-
+	SEMI     = ";"
 	DSEMI    = ";;"
 	DLESS    = "<<"
 	LESS     = "<"
