@@ -24,13 +24,13 @@ const (
 	DAND  = "&&"
 	DPIPE = "||"
 
-	DSEMI  = ";;"
-	SEMI   = ";"
-	DLESS  = "<<"
-	LESS   = "<"
-	GREAT  = ">"
-	DGREAT = ">>"
+	SEMI = ";"
 
+	DSEMI    = ";;"
+	DLESS    = "<<"
+	LESS     = "<"
+	GREAT    = ">"
+	DGREAT   = ">>"
 	LESSAND  = "<&"
 	GREATAND = ">&"
 

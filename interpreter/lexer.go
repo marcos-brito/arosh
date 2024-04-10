@@ -35,6 +35,8 @@ func (l *Lexer) NextToken() Token {
 
 	case '&':
 		token = l.readAmpersand()
+	case ';':
+		token = l.readSemiColon()
 
 	case '|':
 		token = l.readPipe()
@@ -91,6 +93,10 @@ func (l *Lexer) peek(at int) rune {
 	}
 
 	return rune(l.source[l.position+at])
+}
+
+func (l *Lexer) readSemiColon() Token {
+	return Token{t: SEMI, lexeme: SEMI}
 }
 
 func (l *Lexer) readAmpersand() Token {
