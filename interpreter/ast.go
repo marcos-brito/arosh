@@ -1,7 +1,10 @@
 package interpreter
 
+import "fmt"
+
 type Node interface {
 	Node()
+	String() string
 }
 
 type Program struct {
@@ -9,12 +12,30 @@ type Program struct {
 }
 
 func (*Program) Node() {}
+func (s *Program) String() string {
+	str := ""
+
+	for _, node := range s.nodes {
+		str += node.String()
+	}
+
+	return str
+}
 
 type Subshell struct {
 	nodes []Node
 }
 
 func (*Subshell) Node() {}
+func (s *Subshell) String() string {
+	str := ""
+
+	for _, node := range s.nodes {
+		str += node.String()
+	}
+
+	return str
+}
 
 type Sequence struct {
 	lhs       Node
@@ -23,6 +44,9 @@ type Sequence struct {
 }
 
 func (*Sequence) Node() {}
+func (s *Sequence) String() string {
+	return fmt.Sprintf("(sequence %s %s %s)", s.separator, s.lhs, s.rhs)
+}
 
 type Conditional struct {
 	lhs             Node
@@ -31,6 +55,9 @@ type Conditional struct {
 }
 
 func (*Conditional) Node() {}
+func (c *Conditional) String() string {
+	return fmt.Sprintf("(conditional %s %s %s)", c.conditionalType, c.lhs, c.rhs)
+}
 
 type Pipe struct {
 	lhs Node
@@ -38,6 +65,9 @@ type Pipe struct {
 }
 
 func (*Pipe) Node() {}
+func (p *Pipe) String() string {
+	return fmt.Sprintf("(pipe %s %s)", p.lhs, p.rhs)
+}
 
 type SimpleCommand struct {
 	name        string
@@ -46,6 +76,9 @@ type SimpleCommand struct {
 }
 
 func (*SimpleCommand) Node() {}
+func (s *SimpleCommand) String() string {
+	return fmt.Sprintf("(simpleCommand %s %v %s)", s.name, s.params, s.redirection)
+}
 
 type Redirection struct {
 	ioNumber        int
@@ -54,3 +87,6 @@ type Redirection struct {
 }
 
 func (*Redirection) Node() {}
+func (r *Redirection) String() string {
+	return fmt.Sprintf("(redirection %d %s %s)", r.ioNumber, r.redirectionType, r.file)
+}
