@@ -19,7 +19,7 @@ func (*Subshell) Node() {}
 type Sequence struct {
 	lhs       Node
 	rhs       Node
-	separator rune
+	separator string
 }
 
 func (*Sequence) Node() {}
