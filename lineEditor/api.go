@@ -2,6 +2,7 @@ package lineEditor
 
 import (
 	"fmt"
+	"github.com/marcos-brito/arosh/interpreter"
 	"os"
 
 	"github.com/marcos-brito/arosh/lineEditor/event"
@@ -99,7 +100,11 @@ func Clear(editor *LineEditor) {
 }
 
 func AcceptLine(editor *LineEditor) {
+	lexer := interpreter.NewLexer(editor.text.text())
+	parser := interpreter.NewParser(lexer)
+
 	editor.print(fmt.Sprintf("%s%s", editor.prompt, editor.text.text()))
+	editor.print(parser.Parse().String())
 	editor.eventManager.Notify(event.LINE_ACCEPTED)
 
 	editor.deleteAll()
