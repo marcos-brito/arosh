@@ -10,7 +10,7 @@ type Lexer struct {
 	currentChar rune
 }
 
-func New(source string) *Lexer {
+func NewLexer(source string) *Lexer {
 	return &Lexer{
 		source:      source,
 		position:    0,

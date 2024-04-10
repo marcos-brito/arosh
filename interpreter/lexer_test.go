@@ -34,7 +34,7 @@ func TestReadingAmpersand(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		lexer := New(tt.source)
+		lexer := NewLexer(tt.source)
 		tokens := lexer.Tokenize()
 
 		if !reflect.DeepEqual(tokens, tt.expected) {
@@ -84,7 +84,7 @@ func TestReadingPipes(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		lexer := New(tt.source)
+		lexer := NewLexer(tt.source)
 		tokens := lexer.Tokenize()
 
 		if !reflect.DeepEqual(tokens, tt.expected) {
@@ -178,7 +178,7 @@ func TestReadingInputRedirection(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		lexer := New(tt.source)
+		lexer := NewLexer(tt.source)
 		tokens := lexer.Tokenize()
 
 		if !reflect.DeepEqual(tokens, tt.expected) {
@@ -258,7 +258,7 @@ func TestReadingOutputRedirection(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		lexer := New(tt.source)
+		lexer := NewLexer(tt.source)
 		tokens := lexer.Tokenize()
 
 		if !reflect.DeepEqual(tokens, tt.expected) {
