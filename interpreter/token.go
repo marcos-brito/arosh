@@ -56,6 +56,8 @@ const (
 	UNTIL = "UNTIL"
 	FOR   = "FOR"
 
+	FUNCTION = "FUNCTION"
+
 	LBRACE = "{"
 	RBRACE = "}"
 	BANG   = "!"
