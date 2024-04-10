@@ -42,7 +42,7 @@ func (*Pipe) Node() {}
 type SimpleCommand struct {
 	name        string
 	params      []string
-	redirection Redirection
+	redirection Node
 }
 
 func (*SimpleCommand) Node() {}
