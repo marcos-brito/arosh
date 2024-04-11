@@ -1,6 +1,6 @@
 package interpreter
 
-type tokenType string
+type tokenType = string
 
 type Token struct {
 	t      tokenType
@@ -64,26 +64,27 @@ const (
 )
 
 var reservedWords = map[string]string{
-	"do":    DO,
-	"done":  DONE,
-	"if":    IF,
-	"then":  THEN,
-	"else":  ELSE,
-	"elif":  ELIF,
-	"fi":    FI,
-	"case":  CASE,
-	"esac":  ESAC,
-	"while": WHILE,
-	"until": UNTIL,
-	"for":   FOR,
-	"in":    IN,
+	"do":       DO,
+	"done":     DONE,
+	"if":       IF,
+	"then":     THEN,
+	"else":     ELSE,
+	"elif":     ELIF,
+	"function": FUNCTION,
+	"fi":       FI,
+	"case":     CASE,
+	"esac":     ESAC,
+	"while":    WHILE,
+	"until":    UNTIL,
+	"for":      FOR,
+	"in":       IN,
 }
 
-func LookupReservedWord(word string) (string, bool) {
-	word, ok := reservedWords[word]
+func LookupReservedWord(word string) (tokenType, bool) {
+	keyWord, ok := reservedWords[word]
 
 	if ok {
-		return word, true
+		return keyWord, true
 	}
 
 	return "", false
