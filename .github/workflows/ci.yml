@@ -1,0 +1,50 @@
+---
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup go
+        uses: actions/setup-go@v5
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install golines
+        run: go install github.com/segmentio/golines@latest
+
+      - name: Format
+        run: golines . -w
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup go
+        uses: actions/setup-go@v5
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: go build -v ./...
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup go
+        uses: actions/setup-go@v5
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test
+        run: go test -cover ./...
