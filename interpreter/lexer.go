@@ -7,6 +7,7 @@ import (
 type Lexer struct {
 	source      string
 	position    int
+	line        int
 	currentChar rune
 }
 
@@ -14,6 +15,7 @@ func NewLexer(source string) *Lexer {
 	return &Lexer{
 		source:      source,
 		position:    0,
+		line:        0,
 		currentChar: rune(source[0]),
 	}
 }
@@ -22,7 +24,7 @@ func (l *Lexer) NextToken() Token {
 	var token Token
 
 	for {
-		if !unicode.IsSpace(l.currentChar) {
+		if !unicode.IsSpace(l.currentChar) && l.currentChar != '\n' && l.currentChar != '\r' {
 			break
 		}
 
@@ -32,7 +34,10 @@ func (l *Lexer) NextToken() Token {
 	switch l.currentChar {
 	case 0:
 		token = Token{t: EOF, lexeme: EOF}
-
+	case '\n':
+		l.line++
+	case '\r':
+		l.line++
 	case '&':
 		token = l.readAmpersand()
 	case ';':
