@@ -10,7 +10,6 @@ type Token struct {
 const (
 	EOF  = "EOF"
 	WORD = "WORD"
-	NAME = "NAME"
 
 	IO_NUMBER = "IO_NUMBER"
 

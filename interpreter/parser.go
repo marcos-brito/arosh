@@ -142,7 +142,7 @@ func (p *Parser) command() (Node, error) {
 		return p.function()
 	}
 
-	if p.match(NAME) {
+	if p.match(WORD) {
 		return p.simpleCommand()
 	}
 
@@ -158,7 +158,7 @@ func (p *Parser) simpleCommand() (Node, error) {
 	params := []string{}
 
 	p.next()
-	for p.match(NAME, WORD) {
+	for p.match(WORD) {
 		params = append(params, p.current.lexeme)
 		p.next()
 	}

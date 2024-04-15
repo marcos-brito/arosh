@@ -25,9 +25,9 @@ func TestReadingAmpersand(t *testing.T) {
 		{
 			"ls & echo 123",
 			[]Token{
-				{t: NAME, lexeme: "ls"},
+				{t: WORD, lexeme: "ls"},
 				{t: AND, lexeme: AND},
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: WORD, lexeme: "123"},
 			},
 		},
@@ -64,21 +64,21 @@ func TestReadingPipes(t *testing.T) {
 		{
 			"ls | echo 123",
 			[]Token{
-				{t: NAME, lexeme: "ls"},
+				{t: WORD, lexeme: "ls"},
 				{t: PIPE, lexeme: PIPE},
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: WORD, lexeme: "123"},
 			},
 		},
 		{
 			"ls || echo 123 | tr",
 			[]Token{
-				{t: NAME, lexeme: "ls"},
+				{t: WORD, lexeme: "ls"},
 				{t: DPIPE, lexeme: DPIPE},
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: WORD, lexeme: "123"},
 				{t: PIPE, lexeme: PIPE},
-				{t: NAME, lexeme: "tr"},
+				{t: WORD, lexeme: "tr"},
 			},
 		},
 	}
@@ -101,78 +101,78 @@ func TestReadingInputRedirection(t *testing.T) {
 	}{
 		{
 			"cat << file",
-			[]Token{{t: NAME, lexeme: "cat"}, {t: DLESS, lexeme: DLESS}, {t: NAME, lexeme: "file"}},
+			[]Token{{t: WORD, lexeme: "cat"}, {t: DLESS, lexeme: DLESS}, {t: WORD, lexeme: "file"}},
 		},
 		{
 			"echo 3<< file",
 			[]Token{
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: IO_NUMBER, lexeme: "3"},
 				{t: DLESS, lexeme: DLESS},
-				{t: NAME, lexeme: "file"},
+				{t: WORD, lexeme: "file"},
 			},
 		},
 		{
 			"echo 2< file",
 			[]Token{
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: IO_NUMBER, lexeme: "2"},
 				{t: LESS, lexeme: LESS},
-				{t: NAME, lexeme: "file"},
+				{t: WORD, lexeme: "file"},
 			},
 		},
 		{
 			"echo 123< file",
 			[]Token{
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: WORD, lexeme: "123"},
 				{t: LESS, lexeme: LESS},
-				{t: NAME, lexeme: "file"},
+				{t: WORD, lexeme: "file"},
 			},
 		},
 		{
 			"echo 123<& file",
 			[]Token{
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: WORD, lexeme: "123"},
 				{t: LESSAND, lexeme: LESSAND},
-				{t: NAME, lexeme: "file"},
+				{t: WORD, lexeme: "file"},
 			},
 		},
 		{
 			"echo 9<& file",
 			[]Token{
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: IO_NUMBER, lexeme: "9"},
 				{t: LESSAND, lexeme: LESSAND},
-				{t: NAME, lexeme: "file"},
+				{t: WORD, lexeme: "file"},
 			},
 		},
 		{
 			"echo 9<<- file",
 			[]Token{
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: IO_NUMBER, lexeme: "9"},
 				{t: DLESSDASH, lexeme: DLESSDASH},
-				{t: NAME, lexeme: "file"},
+				{t: WORD, lexeme: "file"},
 			},
 		},
 		{
 			"echo 9<> file",
 			[]Token{
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: IO_NUMBER, lexeme: "9"},
 				{t: LESSGREAT, lexeme: LESSGREAT},
-				{t: NAME, lexeme: "file"},
+				{t: WORD, lexeme: "file"},
 			},
 		},
 		{
 			"echo 92<> file",
 			[]Token{
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: WORD, lexeme: "92"},
 				{t: LESSGREAT, lexeme: LESSGREAT},
-				{t: NAME, lexeme: "file"},
+				{t: WORD, lexeme: "file"},
 			},
 		},
 	}
@@ -196,63 +196,63 @@ func TestReadingOutputRedirection(t *testing.T) {
 		{
 			"cat >> file",
 			[]Token{
-				{t: NAME, lexeme: "cat"},
+				{t: WORD, lexeme: "cat"},
 				{t: DGREAT, lexeme: DGREAT},
-				{t: NAME, lexeme: "file"},
+				{t: WORD, lexeme: "file"},
 			},
 		},
 		{
 			"echo 3>> file",
 			[]Token{
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: IO_NUMBER, lexeme: "3"},
 				{t: DGREAT, lexeme: DGREAT},
-				{t: NAME, lexeme: "file"},
+				{t: WORD, lexeme: "file"},
 			},
 		},
 		{
 			"echo 2> file",
 			[]Token{
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: IO_NUMBER, lexeme: "2"},
 				{t: GREAT, lexeme: GREAT},
-				{t: NAME, lexeme: "file"},
+				{t: WORD, lexeme: "file"},
 			},
 		},
 		{
 			"echo 123> file",
 			[]Token{
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: WORD, lexeme: "123"},
 				{t: GREAT, lexeme: GREAT},
-				{t: NAME, lexeme: "file"},
+				{t: WORD, lexeme: "file"},
 			},
 		},
 		{
 			"echo 123>& file",
 			[]Token{
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: WORD, lexeme: "123"},
 				{t: GREATAND, lexeme: GREATAND},
-				{t: NAME, lexeme: "file"},
+				{t: WORD, lexeme: "file"},
 			},
 		},
 		{
 			"echo 9>& file",
 			[]Token{
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: IO_NUMBER, lexeme: "9"},
 				{t: GREATAND, lexeme: GREATAND},
-				{t: NAME, lexeme: "file"},
+				{t: WORD, lexeme: "file"},
 			},
 		},
 		{
 			"echo 123>| file",
 			[]Token{
-				{t: NAME, lexeme: "echo"},
+				{t: WORD, lexeme: "echo"},
 				{t: WORD, lexeme: "123"},
 				{t: CLOBBER, lexeme: CLOBBER},
-				{t: NAME, lexeme: "file"},
+				{t: WORD, lexeme: "file"},
 			},
 		},
 	}

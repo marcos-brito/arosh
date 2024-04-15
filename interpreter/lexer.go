@@ -189,8 +189,6 @@ func (l *Lexer) readNumber() Token {
 	return Token{t: WORD, lexeme: lexeme}
 }
 
-// Return a WORD or a NAME. As defined in https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_235
-// and https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_446
 func (l *Lexer) readWord() Token {
 	lexeme := ""
 	for {
@@ -203,11 +201,7 @@ func (l *Lexer) readWord() Token {
 		l.consume()
 	}
 
-	if l.isNumeric(rune(lexeme[0])) {
-		return Token{t: WORD, lexeme: lexeme}
-	}
-
-	return Token{t: NAME, lexeme: lexeme}
+	return Token{t: WORD, lexeme: lexeme}
 }
 
 func (l *Lexer) isWord(c rune) bool {
