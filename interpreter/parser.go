@@ -149,8 +149,8 @@ func (p *Parser) command() (Node, error) {
 	return p.compoundCommand()
 }
 
-func (p *Parser) function() Node {
-	return nil
+func (p *Parser) function() (Node, error) {
+	return nil, nil
 }
 
 func (p *Parser) simpleCommand() (Node, error) {
