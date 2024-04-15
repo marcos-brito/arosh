@@ -73,7 +73,7 @@ func TestParseSequence(t *testing.T) {
 	for _, tt := range tests {
 		lexer := NewLexer(tt.source)
 		parser := NewParser(lexer)
-		got := parser.Parse()
+		got, _ := parser.Parse()
 
 		if got.String() != tt.expected.String() {
 			t.Errorf(
@@ -107,7 +107,7 @@ func TestParseSimpleCommand(t *testing.T) {
 	for _, tt := range tests {
 		lexer := NewLexer(tt.source)
 		parser := NewParser(lexer)
-		got := parser.Parse()
+		got, _ := parser.Parse()
 
 		if got.String() != tt.expected.String() {
 			t.Errorf(

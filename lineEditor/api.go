@@ -104,9 +104,16 @@ func AcceptLine(editor *LineEditor) {
 	parser := interpreter.NewParser(lexer)
 
 	editor.print(fmt.Sprintf("%s%s", editor.prompt, editor.text.text()))
-	editor.print(parser.Parse().String())
-	editor.eventManager.Notify(event.LINE_ACCEPTED)
+	ast, err := parser.Parse()
 
+	// TODO: no else statements please
+	if err != nil {
+		editor.print(err.Error())
+	} else {
+		editor.print(ast.String())
+	}
+
+	editor.eventManager.Notify(event.LINE_ACCEPTED)
 	editor.deleteAll()
 }
 

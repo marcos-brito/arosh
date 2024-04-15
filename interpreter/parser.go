@@ -1,5 +1,10 @@
 package interpreter
 
+import (
+	"fmt"
+	"strings"
+)
+
 type Parser struct {
 	lexer   *Lexer
 	current Token
@@ -22,63 +27,117 @@ func (p *Parser) match(types ...tokenType) bool {
 	return false
 }
 
+func (p *Parser) expect(t tokenType) bool {
+	return p.current.t == t
+}
+
+func (p *Parser) expectError() error {
+	return fmt.Errorf(
+		"Unexpected token near %d:%d: %s",
+		p.lexer.line,
+		p.lexer.position,
+		strings.Split(p.lexer.source, "\n\r")[p.lexer.line],
+	)
+}
+
+func (p *Parser) eofError() error {
+	return fmt.Errorf(
+		"Unexpected EOF at %d:%d: %s",
+		p.lexer.line,
+		p.lexer.position,
+		strings.Split(p.lexer.source, "\n\r")[p.lexer.line],
+	)
+}
+
 func (p *Parser) next() {
 	p.current = p.lexer.NextToken()
 }
 
-func (p *Parser) Parse() *Program {
+func (p *Parser) Parse() (*Program, error) {
 	return p.program()
 }
 
-func (p *Parser) program() *Program {
+func (p *Parser) program() (*Program, error) {
 	program := &Program{}
 
 	for !p.match(EOF) {
-		program.nodes = append(program.nodes, p.sequence())
+		node, err := p.sequence()
+
+		if err != nil {
+			return nil, err
+		}
+
+		program.nodes = append(program.nodes, node)
 	}
 
-	return program
+	return program, nil
 }
 
-func (p *Parser) sequence() Node {
-	lhs := p.conditional()
+func (p *Parser) sequence() (Node, error) {
+	lhs, err := p.conditional()
+
+	if err != nil {
+		return nil, err
+	}
 
 	for p.match(SEMI, AND) {
 		separator := p.current.lexeme
+
 		p.next()
-		rhs := p.conditional()
+		rhs, err := p.conditional()
+		if err != nil {
+			return nil, err
+		}
+
 		lhs = &Sequence{separator: separator, lhs: lhs, rhs: rhs}
 	}
 
-	return lhs
+	return lhs, nil
 }
 
-func (p *Parser) conditional() Node {
-	lhs := p.pipe()
+func (p *Parser) conditional() (Node, error) {
+	lhs, err := p.pipe()
+
+	if err != nil {
+		return nil, err
+	}
 
 	for p.match(DAND, DPIPE) {
 		conditionalType := p.current.lexeme
+
 		p.next()
-		rhs := p.pipe()
+		rhs, err := p.pipe()
+		if err != nil {
+			return nil, err
+		}
+
 		lhs = &Conditional{conditionalType: conditionalType, lhs: lhs, rhs: rhs}
 	}
 
-	return lhs
+	return lhs, nil
 }
 
-func (p *Parser) pipe() Node {
-	lhs := p.command()
+func (p *Parser) pipe() (Node, error) {
+	lhs, err := p.command()
+
+	if err != nil {
+		return nil, err
+	}
 
 	for p.match(PIPE) {
 		p.next()
-		rhs := p.command()
+		rhs, err := p.command()
+		if err != nil {
+			return nil, err
+		}
+
 		lhs = &Pipe{lhs: lhs, rhs: rhs}
 	}
 
-	return lhs
+	return lhs, nil
 }
 
-func (p *Parser) command() Node {
+func (p *Parser) command() (Node, error) {
 	if p.match(FUNCTION) {
 		return p.function()
 	}
@@ -94,7 +153,7 @@ func (p *Parser) function() Node {
 	return nil
 }
 
-func (p *Parser) simpleCommand() Node {
+func (p *Parser) simpleCommand() (Node, error) {
 	name := p.current.lexeme
 	params := []string{}
 
@@ -104,9 +163,9 @@ func (p *Parser) simpleCommand() Node {
 		p.next()
 	}
 
-	return &SimpleCommand{name: name, params: params}
+	return &SimpleCommand{name: name, params: params}, nil
 }
 
-func (p *Parser) compoundCommand() Node {
-	return nil
+func (p *Parser) compoundCommand() (Node, error) {
+	return nil, nil
 }
