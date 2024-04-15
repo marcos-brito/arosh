@@ -6,8 +6,9 @@ import (
 
 func TestParseSequence(t *testing.T) {
 	tests := []struct {
-		source   string
-		expected *Program
+		source     string
+		expected   *Program
+		shouldFail bool
 	}{
 		{
 			"cat file | grep struct & echo sup | grep",
@@ -37,6 +38,7 @@ func TestParseSequence(t *testing.T) {
 					},
 				},
 			},
+			false,
 		},
 		{
 			"echo 123 & ls & pacman -Syu; nvim",
@@ -67,13 +69,55 @@ func TestParseSequence(t *testing.T) {
 					},
 				},
 			},
+			false,
+		},
+		{
+			"tmux &",
+			&Program{
+				nodes: []Node{
+					&Sequence{
+						separator: "&",
+						lhs: &SimpleCommand{
+							name: "tmux",
+						},
+					},
+				},
+			},
+			false,
+		},
+		{
+			"cat dependecies.txt & | grep pandas",
+			nil,
+			true,
+		},
+		{
+			"cat dependecies.txt & && grep pandas",
+			nil,
+			true,
+		},
+		{
+			"cat dependecies.txt & ;",
+			nil,
+			true,
 		},
 	}
 
 	for _, tt := range tests {
 		lexer := NewLexer(tt.source)
 		parser := NewParser(lexer)
-		got, _ := parser.Parse()
+		got, err := parser.Parse()
+
+		if tt.shouldFail {
+			if err == nil {
+				t.Errorf(
+					"Expected %s to fail but got %s",
+					tt.source,
+					got,
+				)
+			}
+
+			continue
+		}
 
 		if got.String() != tt.expected.String() {
 			t.Errorf(

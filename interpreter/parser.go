@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+var operators []tokenType = []tokenType{AND, DAND, PIPE, DPIPE, SEMI}
+
 type Parser struct {
 	lexer   *Lexer
 	current Token
@@ -82,8 +84,12 @@ func (p *Parser) sequence() (Node, error) {
 
 	for p.match(SEMI, AND) {
 		separator := p.current.lexeme
-
 		p.next()
+
+		if p.match(operators...) {
+			return nil, p.expectError()
+		}
+
 		rhs, err := p.conditional()
 		if err != nil {
 			return nil, err
@@ -101,11 +107,14 @@ func (p *Parser) conditional() (Node, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	for p.match(DAND, DPIPE) {
 		conditionalType := p.current.lexeme
-
 		p.next()
+
+		if p.match(operators...) {
+			return nil, p.expectError()
+		}
+
 		rhs, err := p.pipe()
 		if err != nil {
 			return nil, err
@@ -126,6 +135,11 @@ func (p *Parser) pipe() (Node, error) {
 
 	for p.match(PIPE) {
 		p.next()
+
+		if p.match(operators...) {
+			return nil, p.expectError()
+		}
+
 		rhs, err := p.command()
 		if err != nil {
 			return nil, err
