@@ -83,7 +83,7 @@ func (p *Parser) sequence() (Node, error) {
 	}
 
 	for p.match(SEMI, AND) {
-		separator := p.current.lexeme
+		separator := p.current.t
 		p.next()
 
 		if p.match(operators...) {
@@ -108,7 +108,7 @@ func (p *Parser) conditional() (Node, error) {
 		return nil, err
 	}
 	for p.match(DAND, DPIPE) {
-		conditionalType := p.current.lexeme
+		conditionalType := p.current.t
 		p.next()
 
 		if p.match(operators...) {

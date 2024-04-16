@@ -15,7 +15,7 @@ func TestParseSequence(t *testing.T) {
 			&Program{
 				nodes: []Node{
 					&Sequence{
-						separator: "&",
+						separator: AND,
 						lhs: &Pipe{
 							lhs: &SimpleCommand{
 								name:   "cat",
@@ -45,11 +45,11 @@ func TestParseSequence(t *testing.T) {
 			&Program{
 				nodes: []Node{
 					&Sequence{
-						separator: ";",
+						separator: SEMI,
 						lhs: &Sequence{
-							separator: "&",
+							separator: AND,
 							lhs: &Sequence{
-								separator: "&",
+								separator: AND,
 								lhs: &SimpleCommand{
 									name:   "echo",
 									params: []string{"123"},
@@ -76,7 +76,7 @@ func TestParseSequence(t *testing.T) {
 			&Program{
 				nodes: []Node{
 					&Sequence{
-						separator: "&",
+						separator: AND,
 						lhs: &SimpleCommand{
 							name: "tmux",
 						},
