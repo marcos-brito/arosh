@@ -40,6 +40,7 @@ func (t *Text) text() string {
 	return text
 }
 
+// BUG: It's not possible to insert behind the first character.
 func (t *Text) add(position int, content string) {
 	pieceIndex, offset := t.findPieceAndOffset(position)
 	editIsAtStart := position == offset
