@@ -11,9 +11,6 @@ import (
 
 const PROMPT = "$ "
 
-// We won't use raw char in this. Instead we'll wrap chars in a struct
-// that also has data about highlights and maybe position
-
 type Widget interface {
 	// Before the loop
 	Setup(*LineEditor)
