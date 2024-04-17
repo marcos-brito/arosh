@@ -82,9 +82,14 @@ func (editor *LineEditor) View() string {
 	out := ""
 	text := editor.text.text()
 	editor.setCursorChar()
+	rightOffset := editor.position + 1
+
+	if editor.position == len(text) {
+		rightOffset = len(text)
+	}
 
 	out += strings.Join(editor.messages, "\n")
-	out += "\n" + editor.prompt + text[:editor.position] + editor.cursor.View() + text[editor.position:]
+	out += "\n" + editor.prompt + text[:editor.position] + editor.cursor.View() + text[rightOffset:]
 
 	return out
 }
