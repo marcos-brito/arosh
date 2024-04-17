@@ -19,9 +19,8 @@ git clone https://github.com/YOU/arosh
 There is some stuff you need to install as well:
 
 - go
-- ncurses
 
-It should be easy to install using your favorite package manager. If you are on `Windows` and outside
+That's it. Should be easy to install using your favorite package manager. If you are on `Windows` and outside
 the terminal, you are on your own.
 
 After this just make your changes and create a `pull request`.

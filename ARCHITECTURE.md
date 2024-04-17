@@ -13,13 +13,14 @@ not every step is made as described in the document.
 - **bin:** All the executables are placed here.
   - **bin/keyFinder:** It grabs the input and prints the key code. In nothing happens in 5 seconds it exits.
   - **bin/arosh:** The shell itself. It creates a instace of the `lineEditor`, attach some widgets etc.
-- **lexer:** Lexical analysis. Here, the raw text inserted by the user is tokenized in something easier to work with. It's pretty straightforward and things
-  just go wrong if some unexpected character is found.
-- **parsing:**
-- **expansion:**
+- **interpreter:** Contains must of the things related to syntax analysis and execution. This is what happens here:
+  - Lexycal analysis: Here, the raw text inserted by the user is tokenized in something easier to work with. It's pretty straightforward and things
+    just go wrong if some unexpected character is found.
+  - Parsing:
+  - Expansion:
 - **env:**
 - **builtins:** Implementaion for all the builtin commands (e.g `cd`, `pwd`, `set`).
-- **lineEditor:** It's a TUI implemented with ncurses, it also defines an API for widgets and some internal use. The API have methods for moving around, changing text, add or overwrite keybings and so forth.
+- **lineEditor:** It's a TUI implemented with bubbletea, it also defines an API for widgets and some internal use. The API have methods for moving around, changing text, add or overwrite keybings and so forth.
   - **lineEditor/event:** Is a implemenation of the `observer` pattern. It's used to emit events that occur in the editor.
 - **widgets:** This is the home for some builtin widgets. They are all implemented using the line editor API and can be easily replaced for external implemenations.
   - **highlights:**
