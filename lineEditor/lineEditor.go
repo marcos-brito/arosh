@@ -37,9 +37,7 @@ func NewLineEditor() *LineEditor {
 		cursor:       cursor.New(),
 	}
 
-	editor.cursor.TextStyle = lipgloss.NewStyle().
-		Background(lipgloss.Color("#000000")).
-		Foreground(lipgloss.Color("#ffffff"))
+	editor.cursor.TextStyle = lipgloss.NewStyle().Background(lipgloss.Color("7")).Foreground(lipgloss.Color("0"))
 
 	return editor
 }
