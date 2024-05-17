@@ -21,7 +21,7 @@ func NewParser(lexer *Lexer) *Parser {
 
 func (p *Parser) match(types ...tokenType) bool {
 	for _, t := range types {
-		if p.current.t == t {
+		if p.current.T == t {
 			return true
 		}
 	}
@@ -30,7 +30,7 @@ func (p *Parser) match(types ...tokenType) bool {
 }
 
 func (p *Parser) expect(t tokenType) bool {
-	return p.current.t == t
+	return p.current.T == t
 }
 
 func (p *Parser) expectError() error {
@@ -83,7 +83,7 @@ func (p *Parser) sequence() (Node, error) {
 	}
 
 	for p.match(SEMI, AND) {
-		separator := p.current.t
+		separator := p.current.T
 		p.next()
 
 		if p.match(operators...) {
@@ -108,7 +108,7 @@ func (p *Parser) conditional() (Node, error) {
 		return nil, err
 	}
 	for p.match(DAND, DPIPE) {
-		conditionalType := p.current.t
+		conditionalType := p.current.T
 		p.next()
 
 		if p.match(operators...) {
@@ -168,12 +168,12 @@ func (p *Parser) function() (Node, error) {
 }
 
 func (p *Parser) simpleCommand() (Node, error) {
-	name := p.current.lexeme
+	name := p.current.Lexeme
 	params := []string{}
 
 	p.next()
 	for p.match(WORD) {
-		params = append(params, p.current.lexeme)
+		params = append(params, p.current.Lexeme)
 		p.next()
 	}
 

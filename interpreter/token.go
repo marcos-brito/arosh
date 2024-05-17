@@ -3,8 +3,8 @@ package interpreter
 type tokenType = string
 
 type Token struct {
-	t      tokenType
-	lexeme string
+	T      tokenType
+	Lexeme string
 }
 
 const (

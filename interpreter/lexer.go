@@ -33,7 +33,7 @@ func (l *Lexer) NextToken() Token {
 
 	switch l.currentChar {
 	case 0:
-		token = Token{t: EOF, lexeme: EOF}
+		token = Token{T: EOF, Lexeme: EOF}
 	case '\n':
 		l.line++
 	case '\r':
@@ -72,7 +72,7 @@ func (l *Lexer) Tokenize() []Token {
 	for {
 		token := l.NextToken()
 
-		if token.t == EOF {
+		if token.T == EOF {
 			break
 		}
 
@@ -101,17 +101,17 @@ func (l *Lexer) peek(at int) rune {
 }
 
 func (l *Lexer) readSemiColon() Token {
-	return Token{t: SEMI, lexeme: SEMI}
+	return Token{T: SEMI, Lexeme: SEMI}
 }
 
 func (l *Lexer) readAmpersand() Token {
 	switch l.peek(1) {
 	case '&':
 		l.consume()
-		return Token{t: DAND, lexeme: DAND}
+		return Token{T: DAND, Lexeme: DAND}
 
 	default:
-		return Token{t: AND, lexeme: AND}
+		return Token{T: AND, Lexeme: AND}
 	}
 }
 
@@ -119,10 +119,10 @@ func (l *Lexer) readPipe() Token {
 	switch l.peek(1) {
 	case '|':
 		l.consume()
-		return Token{t: DPIPE, lexeme: DPIPE}
+		return Token{T: DPIPE, Lexeme: DPIPE}
 
 	default:
-		return Token{t: PIPE, lexeme: PIPE}
+		return Token{T: PIPE, Lexeme: PIPE}
 	}
 }
 
@@ -130,18 +130,18 @@ func (l *Lexer) readOutputRedirection() Token {
 	switch l.peek(1) {
 	case '>':
 		l.consume()
-		return Token{t: DGREAT, lexeme: DGREAT}
+		return Token{T: DGREAT, Lexeme: DGREAT}
 
 	case '&':
 		l.consume()
-		return Token{t: GREATAND, lexeme: GREATAND}
+		return Token{T: GREATAND, Lexeme: GREATAND}
 
 	case '|':
 		l.consume()
-		return Token{t: CLOBBER, lexeme: CLOBBER}
+		return Token{T: CLOBBER, Lexeme: CLOBBER}
 
 	default:
-		return Token{t: GREAT, lexeme: GREAT}
+		return Token{T: GREAT, Lexeme: GREAT}
 	}
 }
 
@@ -152,27 +152,27 @@ func (l *Lexer) readInputRedirection() Token {
 
 		if l.peek(1) == '-' {
 			l.consume()
-			return Token{t: DLESSDASH, lexeme: DLESSDASH}
+			return Token{T: DLESSDASH, Lexeme: DLESSDASH}
 		}
 
-		return Token{t: DLESS, lexeme: DLESS}
+		return Token{T: DLESS, Lexeme: DLESS}
 
 	case '&':
 		l.consume()
-		return Token{t: LESSAND, lexeme: LESSAND}
+		return Token{T: LESSAND, Lexeme: LESSAND}
 
 	case '>':
 		l.consume()
-		return Token{t: LESSGREAT, lexeme: LESSGREAT}
+		return Token{T: LESSGREAT, Lexeme: LESSGREAT}
 
 	default:
-		return Token{t: LESS, lexeme: LESS}
+		return Token{T: LESS, Lexeme: LESS}
 	}
 }
 
 func (l *Lexer) readNumber() Token {
 	if l.isRedirection(l.peek(1)) {
-		return Token{t: IO_NUMBER, lexeme: string(l.currentChar)}
+		return Token{T: IO_NUMBER, Lexeme: string(l.currentChar)}
 	}
 
 	lexeme := ""
@@ -186,7 +186,7 @@ func (l *Lexer) readNumber() Token {
 		l.consume()
 	}
 
-	return Token{t: WORD, lexeme: lexeme}
+	return Token{T: WORD, Lexeme: lexeme}
 }
 
 func (l *Lexer) readWord() Token {
