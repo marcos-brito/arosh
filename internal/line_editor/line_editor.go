@@ -19,22 +19,22 @@ type Widget interface {
 }
 
 type LineEditor struct {
-	text         *Text
 	widgets      []Widget
 	prompt       string
 	position     int
 	eventManager *event.EventManager
 	// FIX: rename this
 	messages []string
+	text     []rune
 	cursor   cursor.Model
 }
 
 func NewLineEditor() *LineEditor {
 	editor := &LineEditor{
-		text:         newText(""),
 		prompt:       PROMPT,
 		eventManager: event.NewEventManager(),
 		cursor:       cursor.New(),
+		text:   []rune{},
 	}
 
 	editor.cursor.TextStyle = lipgloss.NewStyle().Background(lipgloss.Color("7")).Foreground(lipgloss.Color("0"))
