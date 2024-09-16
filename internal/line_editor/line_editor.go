@@ -1,154 +1,199 @@
 package lineEditor
 
 import (
-	"strings"
+	"fmt"
+	"slices"
 
 	"github.com/charmbracelet/bubbles/cursor"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/marcos-brito/arosh/lineEditor/event"
+	"github.com/marcos-brito/arosh/internal/event"
 )
 
-const PROMPT = "$ "
+const DEFAULT_PROMPT = "$ "
 
-type Widget interface {
-	// Before the loop
-	Setup(*LineEditor)
-	// In every iteration (every keypress)
-	Exec(*LineEditor)
+type Action = func() (tea.Model, tea.Cmd)
+
+type Binding struct {
+	action Action
+	help   string
 }
 
 type LineEditor struct {
-	widgets      []Widget
-	prompt       string
-	position     int
-	eventManager *event.EventManager
-	// FIX: rename this
-	messages []string
 	text     []rune
+	prompt   string
+	position int
+	keyMap   map[string]Binding
+	Events   *event.EventManager
 	cursor   cursor.Model
+	width    int
 }
 
-func NewLineEditor() *LineEditor {
+func New() *LineEditor {
 	editor := &LineEditor{
-		prompt:       PROMPT,
-		eventManager: event.NewEventManager(),
-		cursor:       cursor.New(),
 		text:   []rune{},
+		prompt: DEFAULT_PROMPT,
+		keyMap: map[string]Binding{},
+		Events: event.New(),
+		cursor: cursor.New(),
 	}
 
-	editor.cursor.TextStyle = lipgloss.NewStyle().Background(lipgloss.Color("7")).Foreground(lipgloss.Color("0"))
+	editor.cursor.TextStyle = lipgloss.NewStyle().
+		Background(lipgloss.Color("7")).
+		Foreground(lipgloss.Color("0"))
 
 	return editor
 }
 
 func (editor *LineEditor) Init() tea.Cmd {
-	editor.setupWidgets()
 	return nil
-}
-
-func (editor *LineEditor) quit() {
-	tea.Quit()
 }
 
 func (editor *LineEditor) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		editor.handleKey(msg)
+		return editor.handleKey(msg)
+	case tea.WindowSizeMsg:
+		editor.width = msg.Width
 	}
 
 	return editor, nil
 }
 
-func (editor *LineEditor) handleKey(msg tea.KeyMsg) {
-	key := msg.String()
-
-	fn, ok := aroshBindings[key]
-
-	if ok {
-		fn(editor)
-		return
-	}
-
-	Put(editor, key)
-}
-
-func (editor *LineEditor) View() string {
+func (e *LineEditor) View() string {
 	out := ""
-	text := editor.text.text()
-	editor.setCursorChar()
-	rightOffset := editor.position + 1
+	text := string(e.text)
+	e.setCursorChar()
+	rightOffset := e.position + 1
 
-	if editor.position == len(text) {
+	if e.position == len(text) {
 		rightOffset = len(text)
 	}
 
-	out += strings.Join(editor.messages, "\n")
-	out += "\n" + editor.prompt + text[:editor.position] + editor.cursor.View() + text[rightOffset:]
+	out += e.prompt + text[:e.position] + e.cursor.View() + text[rightOffset:]
 
-	return out
+	return lipgloss.NewStyle().Width(e.width).Render(out)
 }
 
-func (editor *LineEditor) setCursorChar() {
-	text := editor.text.text()
+func (editor *LineEditor) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	key := msg.String()
 
-	if editor.position == len(text) {
-		editor.cursor.SetChar(" ")
+	binding, ok := editor.keyMap[key]
+
+	if ok {
+		return binding.action()
+	}
+
+	editor.Add(key, editor.position)
+	editor.position += len(key)
+
+	return editor, nil
+}
+
+func (e *LineEditor) setCursorChar() {
+	text := string(e.text)
+
+	if e.position == len(text) {
+		e.cursor.SetChar(" ")
 		return
 	}
 
-	if editor.position == 0 {
-		editor.cursor.SetChar(string(text[0]))
+	if e.position == 0 {
+		e.cursor.SetChar(string(text[0]))
 		return
 	}
 
-	editor.cursor.SetChar(string(text[editor.position]))
+	e.cursor.SetChar(string(text[e.position]))
 }
 
-func (editor *LineEditor) setupWidgets() {
-	for _, widget := range editor.widgets {
-		widget.Setup(editor)
+func (e *LineEditor) Bind(action Action, help string, keys ...string) error {
+	for _, key := range keys {
+		_, ok := e.keyMap[key]
+
+		if ok {
+			return fmt.Errorf("Binding %s already taken", key)
+		}
+
+		e.keyMap[key] = Binding{action, help}
 	}
+	return nil
 }
 
-func (editor *LineEditor) execWidgets() {
-	for _, widget := range editor.widgets {
-		widget.Exec(editor)
+func (e *LineEditor) Unbind(key string) {
+	delete(e.keyMap, key)
+}
+
+func (e *LineEditor) Bindings() map[string]Binding {
+	return e.keyMap
+}
+
+func (e *LineEditor) Prompt() string {
+	return e.prompt
+}
+
+func (e *LineEditor) SetPrompt(prompt string) {
+	e.prompt = prompt
+}
+
+func (e *LineEditor) Width() int {
+	return e.width
+}
+
+func (e *LineEditor) Line() string {
+	return string(e.text)
+}
+
+func (e *LineEditor) SetLine(text string) {
+	e.text = []rune(text)
+	e.position = len(text)
+}
+
+func (e *LineEditor) Add(text string, position int) {
+	if position > len(e.text) || position < 0 {
+		return
 	}
+
+	newText := []rune{}
+	newText = append(newText, e.text[:position]...)
+	newText = append(newText, []rune(text)...)
+	newText = append(newText, e.text[position:]...)
+
+	e.text = newText
 }
 
-func (editor *LineEditor) add(text string, position int) {
-	editor.text.add(position, text)
+func (e *LineEditor) Delete(position int) {
+	if position > len(e.text) || position < 0 {
+		return
+	}
+
+	e.text = slices.Delete(e.text, position, position+1)
+	e.position -= 1
 }
 
-func (editor *LineEditor) delete(position int) {
-	editor.text.delete(position)
+func (e *LineEditor) Position() int {
+	return e.position
 }
 
-func (editor *LineEditor) deleteAll() {
-	editor.text = newText("")
-	editor.position = 0
+func (e *LineEditor) SetPostion(position int) {
+	e.position = position
 }
 
-func (editor *LineEditor) moveN(n int) {
-	text := editor.text.text()
+func (e *LineEditor) MoveN(n int) {
+	text := string(e.text)
 
 	if n >= len(text) {
-		editor.position = len(text)
+		e.position = len(text)
 		return
 	}
 
 	if n <= 0 {
-		editor.position = 0
+		e.position = 0
 		return
 	}
 
-	editor.position = n
+	e.position = n
 }
 
-func (editor *LineEditor) print(text string) {
-	editor.messages = append(editor.messages, text)
-}
-
-func (editor *LineEditor) clear() {
+func (editor *LineEditor) Quit() {
+	tea.Quit()
 }
