@@ -2,8 +2,6 @@ package main
 
 import (
 	"testing"
-
-	"github.com/google/go-cmp/cmp"
 )
 
 func TestDeleteBehind(t *testing.T) {
@@ -23,6 +21,10 @@ func TestDeleteBehind(t *testing.T) {
 			"a",
 			"",
 		},
+		{
+			"💀🐂❌",
+			"💀🐂",
+		},
 	}
 
 	for _, tt := range tests {
@@ -35,7 +37,7 @@ func TestDeleteBehind(t *testing.T) {
 		editMode.deleteBehind()
 		got := shell.editor.Line()
 		if tt.want != got {
-			t.Errorf(cmp.Diff(tt.want, got))
+			t.Errorf("\nwant: %s\ngot: %s", tt.want, got)
 		}
 
 	}
@@ -63,6 +65,11 @@ func TestDeleteAllBehind(t *testing.T) {
 			0,
 			"ls -la",
 		},
+		{
+			"💀🐂❌🌊💿⌚",
+			3,
+			"🌊💿⌚",
+		},
 	}
 
 	for _, tt := range tests {
@@ -80,7 +87,7 @@ func TestDeleteAllBehind(t *testing.T) {
 		}
 
 		if shell.editor.Position() != 0 {
-			t.Errorf("Expected postion to be 0")
+			t.Errorf("Expected position to be 0")
 		}
 
 	}
@@ -108,6 +115,11 @@ func TestDeleteAllAhead(t *testing.T) {
 			0,
 			"",
 		},
+		{
+			"💀🐂❌🌊💿⌚",
+			3,
+			"💀🐂❌",
+		},
 	}
 
 	for _, tt := range tests {
@@ -125,7 +137,7 @@ func TestDeleteAllAhead(t *testing.T) {
 		}
 
 		if shell.editor.Position() != tt.position {
-			t.Errorf("Expected postion to be %d", tt.position)
+			t.Errorf("Expected position to be %d", tt.position)
 		}
 
 	}

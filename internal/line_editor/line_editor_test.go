@@ -34,7 +34,7 @@ func TestAdd(t *testing.T) {
 	for _, tt := range tests {
 		lineEditor := New()
 		lineEditor.text = []rune(tt.initial)
-		lineEditor.Add(tt.toAdd, tt.position)
+		lineEditor.Insert(tt.toAdd, tt.position)
 
 		got := string(lineEditor.text)
 		if tt.want != got {

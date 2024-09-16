@@ -62,15 +62,14 @@ func (editor *LineEditor) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (e *LineEditor) View() string {
 	out := ""
-	text := string(e.text)
 	e.setCursorChar()
 	rightOffset := e.position + 1
 
-	if e.position == len(text) {
-		rightOffset = len(text)
+	if e.position == len(e.text) {
+		rightOffset = len(e.text)
 	}
 
-	out += e.prompt + text[:e.position] + e.cursor.View() + text[rightOffset:]
+	out += e.prompt + string(e.text[:e.position]) + e.cursor.View() + string(e.text[rightOffset:])
 
 	return lipgloss.NewStyle().Width(e.width).Render(out)
 }
@@ -84,26 +83,24 @@ func (editor *LineEditor) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return binding.action()
 	}
 
-	editor.Add(key, editor.position)
-	editor.position += len(key)
+	editor.Insert(key, editor.position)
+	editor.position += len(msg.Runes)
 
 	return editor, nil
 }
 
 func (e *LineEditor) setCursorChar() {
-	text := string(e.text)
-
-	if e.position == len(text) {
+	if e.position == len(e.text) {
 		e.cursor.SetChar(" ")
 		return
 	}
 
 	if e.position == 0 {
-		e.cursor.SetChar(string(text[0]))
+		e.cursor.SetChar(string(e.text[0]))
 		return
 	}
 
-	e.cursor.SetChar(string(text[e.position]))
+	e.cursor.SetChar(string(e.text[e.position]))
 }
 
 func (e *LineEditor) Bind(action Action, help string, keys ...string) error {
@@ -145,10 +142,10 @@ func (e *LineEditor) Line() string {
 
 func (e *LineEditor) SetLine(text string) {
 	e.text = []rune(text)
-	e.position = len(text)
+	e.position = len(e.text)
 }
 
-func (e *LineEditor) Add(text string, position int) {
+func (e *LineEditor) Insert(text string, position int) {
 	if position > len(e.text) || position < 0 {
 		return
 	}
@@ -159,6 +156,7 @@ func (e *LineEditor) Add(text string, position int) {
 	newText = append(newText, e.text[position:]...)
 
 	e.text = newText
+	e.Events.Emit("char_inserted")
 }
 
 func (e *LineEditor) Delete(position int) {
@@ -179,10 +177,8 @@ func (e *LineEditor) SetPostion(position int) {
 }
 
 func (e *LineEditor) MoveN(n int) {
-	text := string(e.text)
-
-	if n >= len(text) {
-		e.position = len(text)
+	if n >= len(e.text) {
+		e.position = len(e.text)
 		return
 	}
 
