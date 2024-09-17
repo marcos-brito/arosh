@@ -95,11 +95,6 @@ func (e *LineEditor) setCursorChar() {
 		return
 	}
 
-	if e.position == 0 {
-		e.cursor.SetChar(string(e.text[0]))
-		return
-	}
-
 	e.cursor.SetChar(string(e.text[e.position]))
 }
 
